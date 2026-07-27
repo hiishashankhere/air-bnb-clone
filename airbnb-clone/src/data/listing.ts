@@ -5,7 +5,7 @@ export const listingData: ListingData = {
   title: 'Romantic Jacuzzi 1BHK Candolim | Mirashya UG10',
   type: 'Entire serviced apartment',
   location: 'Candolim, Goa, India',
-  guestsCount: 3,
+  guestsCount: 4,
   bedroomsCount: 1,
   bedsCount: 1,
   bathroomsCount: 1,

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ChevronDown, Flag, Star } from 'lucide-react';
+import { ChevronDown, Flag, Star, X } from 'lucide-react';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Calendar } from '../components/calendar/Calendar';
 import { calculateNights } from '../utils/dateUtils';
@@ -35,7 +35,6 @@ export const BookingCard = memo(function BookingCard({
   onSelectDates,
   onClearDates,
 }: BookingCardProps) {
-  const [isGuestDropdownOpen, setIsGuestDropdownOpen] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -56,14 +55,12 @@ export const BookingCard = memo(function BookingCard({
     const handlePointerDown = (event: PointerEvent) => {
       if (!cardRef.current) return;
       if (!cardRef.current.contains(event.target as Node)) {
-        setIsGuestDropdownOpen(false);
         setIsDatePickerOpen(false);
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsGuestDropdownOpen(false);
         setIsDatePickerOpen(false);
       }
     };
@@ -76,6 +73,10 @@ export const BookingCard = memo(function BookingCard({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  const handleToggleDatePicker = () => {
+    setIsDatePickerOpen((prev) => !prev);
+  };
 
   const handleReserveClick = () => {
     if (!checkIn || !checkOut) {
@@ -112,7 +113,7 @@ export const BookingCard = memo(function BookingCard({
         <div className="grid grid-cols-2 border-b border-gray-400">
           <button
             type="button"
-            onClick={() => setIsDatePickerOpen((prev) => !prev)}
+            onClick={handleToggleDatePicker}
             className="p-3 border-r border-gray-400 cursor-pointer hover:bg-gray-50 focus:outline-none text-left"
           >
             <span className="block text-[10px] font-extrabold text-gray-800 uppercase tracking-wider">
@@ -122,7 +123,7 @@ export const BookingCard = memo(function BookingCard({
           </button>
           <button
             type="button"
-            onClick={() => setIsDatePickerOpen((prev) => !prev)}
+            onClick={handleToggleDatePicker}
             className="p-3 cursor-pointer hover:bg-gray-50 focus:outline-none text-left"
           >
             <span className="block text-[10px] font-extrabold text-gray-800 uppercase tracking-wider">
@@ -133,93 +134,88 @@ export const BookingCard = memo(function BookingCard({
         </div>
 
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsGuestDropdownOpen((prev) => !prev)}
-            className="w-full p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 focus:outline-none text-left"
-            aria-expanded={isGuestDropdownOpen}
-            aria-label="Guests selector"
-          >
-            <div>
-              <span className="block text-[10px] font-extrabold text-gray-800 uppercase tracking-wider">
-                GUESTS
-              </span>
-              <span className="text-xs text-gray-800 font-medium">{guests} guest</span>
-            </div>
-            <ChevronDown
-              className={`w-4 h-4 text-gray-700 transition-transform ${isGuestDropdownOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-
-          {isGuestDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white border border-gray-200 rounded-2xl shadow-airbnb-modal p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">Guests</div>
-                  <div className="text-xs text-gray-500">Maximum 3 guests</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => onGuestsChange(Math.max(1, guests - 1))}
-                    disabled={guests <= 1}
-                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center font-bold text-gray-700 hover:border-gray-900 disabled:opacity-30 transition focus:outline-none focus:ring-2 focus:ring-black"
-                    aria-label="Decrease guest count"
-                  >
-                    -
-                  </button>
-                  <span className="text-sm font-bold text-gray-900">{guests}</span>
-                  <button
-                    onClick={() => onGuestsChange(Math.min(3, guests + 1))}
-                    disabled={guests >= 3}
-                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center font-bold text-gray-700 hover:border-gray-900 disabled:opacity-30 transition focus:outline-none focus:ring-2 focus:ring-black"
-                    aria-label="Increase guest count"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsGuestDropdownOpen(false)}
-                className="w-full text-right text-xs font-semibold text-gray-900 underline pt-2 hover:text-gray-700 focus:outline-none"
-              >
-                Close
-              </button>
-            </div>
-          )}
+          <label className="block p-3 cursor-pointer hover:bg-gray-50 focus-within:bg-gray-50 text-left">
+            <span className="block text-[10px] font-extrabold text-gray-800 uppercase tracking-wider">
+              GUESTS
+            </span>
+            <select
+              value={guests}
+              onChange={(e) => {
+                const count = Number(e.target.value);
+                onGuestsChange(count);
+                setIsDatePickerOpen(false);
+              }}
+              className="w-full bg-transparent text-xs text-gray-800 font-semibold focus:outline-none cursor-pointer pr-6 appearance-none"
+              aria-label="Select number of guests"
+            >
+              <option value={1}>1 guest</option>
+              <option value={2}>2 guests</option>
+              <option value={3}>3 guests</option>
+              <option value={4}>4 guests</option>
+            </select>
+          </label>
+          <ChevronDown className="w-4 h-4 text-gray-700 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
       {isDatePickerOpen && (
-        <div className="absolute left-6 right-6 top-[190px] z-30">
-          <div className="rounded-3xl border border-gray-200 shadow-airbnb-modal overflow-hidden">
-            <div className="max-h-[72vh] overflow-y-auto bg-white">
-              <Calendar
-                checkIn={checkIn}
-                checkOut={checkOut}
-                onSelectDates={onSelectDates}
-                onClearDates={onClearDates}
-                locationName="Candolim"
-              />
+        <div className="absolute right-0 top-0 sm:top-12 z-50 w-[640px] max-w-[90vw] bg-white rounded-3xl p-6 shadow-2xl border border-gray-200">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+            <div>
+              <div className="text-base sm:text-lg font-bold text-gray-900">
+                {checkIn && checkOut
+                  ? `${nightsCount} night${nightsCount > 1 ? 's' : ''}`
+                  : checkIn
+                  ? 'Select checkout date'
+                  : 'Select check-in date'}
+              </div>
+              <div className="text-xs text-gray-500 font-medium">
+                {checkInText} - {checkOutText}
+              </div>
             </div>
-            <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between bg-white">
-              <button
-                type="button"
-                onClick={() => {
-                  onClearDates();
-                  setStatusMessage('Dates cleared.');
-                }}
-                className="text-sm font-semibold text-gray-900 underline hover:text-gray-700 focus:outline-none"
-              >
-                Clear dates
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsDatePickerOpen(false)}
-                className="text-sm font-semibold text-gray-900 underline hover:text-gray-700 focus:outline-none"
-              >
-                Done
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsDatePickerOpen(false)}
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-900 focus:outline-none transition"
+              aria-label="Close calendar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="bg-white">
+            <Calendar
+              checkIn={checkIn}
+              checkOut={checkOut}
+              onSelectDates={(start, end) => {
+                onSelectDates(start, end);
+                if (start && end) {
+                  setStatusMessage(`Selected ${calculateNights(start, end)} nights.`);
+                }
+              }}
+              onClearDates={onClearDates}
+              locationName="Candolim"
+            />
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                onClearDates();
+                setStatusMessage('Dates cleared.');
+              }}
+              className="text-sm font-semibold text-gray-900 underline hover:text-gray-700 focus:outline-none"
+            >
+              Clear dates
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDatePickerOpen(false)}
+              className="px-6 py-2 bg-gray-900 hover:bg-black text-white text-sm font-semibold rounded-xl transition focus:outline-none"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

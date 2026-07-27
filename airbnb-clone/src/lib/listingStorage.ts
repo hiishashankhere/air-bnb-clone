@@ -45,7 +45,7 @@ function isBrowser() {
 function clampGuestCount(value: unknown) {
   const count = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(count)) return defaultState.guestCount;
-  return Math.min(3, Math.max(1, Math.trunc(count)));
+  return Math.min(4, Math.max(1, Math.trunc(count)));
 }
 
 function normalizeDate(value: unknown) {

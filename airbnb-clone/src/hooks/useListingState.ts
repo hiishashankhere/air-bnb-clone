@@ -9,8 +9,17 @@ import type { ListingData } from '../types/listing';
 
 export type ModalType = 'PHOTO_TOUR_SCROLLABLE' | 'PHOTO_TOUR_LIGHTBOX' | null;
 
-function toDate(value: string | null) {
+function toDate(value: string | null): Date | null {
   if (!value) return null;
+  const parts = value.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (!Number.isNaN(year) && !Number.isNaN(month) && !Number.isNaN(day)) {
+      return new Date(year, month, day);
+    }
+  }
   try {
     const date = parseISO(value);
     return Number.isNaN(date.getTime()) ? null : date;
@@ -97,7 +106,7 @@ export function useListingState(listing: ListingData) {
   const setGuestCount = useCallback((count: number) => {
     setState((prev) => ({
       ...prev,
-      guestCount: Math.min(3, Math.max(1, Math.trunc(count))),
+      guestCount: Math.min(4, Math.max(1, Math.trunc(count))),
     }));
   }, []);
 

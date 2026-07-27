@@ -41,7 +41,10 @@ export function getMonthData(year: number, monthIndex: number): MonthData {
   };
 }
 
-export function isDateDisabled(date: Date, minDate: Date = startOfDay(new Date())): boolean {
+export function isDateDisabled(
+  date: Date,
+  minDate: Date = new Date(2026, 6, 1)
+): boolean {
   return isBefore(startOfDay(date), startOfDay(minDate));
 }
 
