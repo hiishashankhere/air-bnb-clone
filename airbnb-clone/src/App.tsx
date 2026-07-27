@@ -34,12 +34,19 @@ export default function App() {
     initialLightboxIndex,
     checkIn,
     checkOut,
+    isSaved,
+    guestCount,
+    bookings,
     handleOpenPhotoTour,
     handleOpenLightbox,
     handleCloseModal,
     handleSelectDates,
     handleClearDates,
-  } = useListingState();
+    toggleSaved,
+    setGuestCount,
+    handleReserve,
+    setPhotoIndex,
+  } = useListingState(listingData);
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans antialiased text-gray-900 selection:bg-[#FF385C] selection:text-white">
@@ -60,13 +67,12 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-6">
         {/* Listing Title & Actions */}
-        <ListingHeader title={listingData.title} />
+        <ListingHeader title={listingData.title} isSaved={isSaved} onToggleSaved={toggleSaved} />
 
         {/* 5-Photo Hero Gallery */}
         <HeroGallery
           photos={listingData.photos}
           onOpenPhotoTour={handleOpenPhotoTour}
-          onOpenLightbox={handleOpenLightbox}
         />
 
         {/* Main Content Layout Grid */}
@@ -114,8 +120,13 @@ export default function App() {
               serviceFee={listingData.serviceFee}
               checkIn={checkIn}
               checkOut={checkOut}
-              onClearDates={handleClearDates}
-            />
+            guests={guestCount}
+            bookingsCount={bookings.length}
+            onGuestsChange={setGuestCount}
+            onReserve={handleReserve}
+            onSelectDates={handleSelectDates}
+            onClearDates={handleClearDates}
+          />
           </div>
         </div>
 
@@ -157,6 +168,8 @@ export default function App() {
             onClose={handleCloseModal}
             photos={listingData.photos}
             onOpenLightbox={handleOpenLightbox}
+            isSaved={isSaved}
+            onToggleSaved={toggleSaved}
           />
         )}
 
@@ -166,6 +179,9 @@ export default function App() {
             onClose={handleCloseModal}
             photos={listingData.photos}
             initialIndex={initialLightboxIndex}
+            isSaved={isSaved}
+            onToggleSaved={toggleSaved}
+            onIndexChange={setPhotoIndex}
           />
         )}
       </Suspense>

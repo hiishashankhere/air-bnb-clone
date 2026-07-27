@@ -3,10 +3,11 @@ import { useState } from 'react';
 
 interface ListingHeaderProps {
   title: string;
+  isSaved: boolean;
+  onToggleSaved: () => void;
 }
 
-export function ListingHeader({ title }: ListingHeaderProps) {
-  const [isSaved, setIsSaved] = useState(false);
+export function ListingHeader({ title, isSaved, onToggleSaved }: ListingHeaderProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = () => {
@@ -33,7 +34,7 @@ export function ListingHeader({ title }: ListingHeaderProps) {
           </button>
 
           <button
-            onClick={() => setIsSaved(!isSaved)}
+            onClick={onToggleSaved}
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition underline focus:outline-none focus:ring-2 focus:ring-black"
             aria-label={isSaved ? 'Saved to wishlists' : 'Save to wishlist'}
           >

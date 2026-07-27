@@ -1,106 +1,124 @@
 import { format, parseISO } from 'date-fns';
-import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  createBookingRecord,
+  loadListingUiState,
+  saveListingUiState,
+} from '../lib/listingStorage';
+import type { ListingData } from '../types/listing';
 
 export type ModalType = 'PHOTO_TOUR_SCROLLABLE' | 'PHOTO_TOUR_LIGHTBOX' | null;
 
+function toDate(value: string | null) {
+  if (!value) return null;
+  try {
+    const date = parseISO(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Custom hook to synchronize modal overlay states and booking date selections with URL query parameters.
+ * Custom hook that keeps listing UI state in localStorage instead of URL params.
  */
-export function useListingState() {
-  const [searchParams, setSearchParams] = useSearchParams();
+export function useListingState(listing: ListingData) {
+  const [state, setState] = useState(() => loadListingUiState());
 
-  const modalParam = searchParams.get('modal') as ModalType;
-  const photoIndexParam = searchParams.get('photoIndex');
-  const checkInParam = searchParams.get('checkIn');
-  const checkOutParam = searchParams.get('checkOut');
+  useEffect(() => {
+    saveListingUiState(state);
+  }, [state]);
 
-  const isPhotoTourOpen = modalParam === 'PHOTO_TOUR_SCROLLABLE';
-  const isLightboxOpen = modalParam === 'PHOTO_TOUR_LIGHTBOX';
-  const initialLightboxIndex = photoIndexParam ? parseInt(photoIndexParam, 10) : 0;
+  const checkIn = useMemo(() => toDate(state.checkIn), [state.checkIn]);
+  const checkOut = useMemo(() => toDate(state.checkOut), [state.checkOut]);
 
-  // Dates default to null if not specified in URL params
-  const checkIn = useMemo(() => {
-    if (checkInParam) {
-      try {
-        const date = parseISO(checkInParam);
-        return isNaN(date.getTime()) ? null : date;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }, [checkInParam]);
-
-  const checkOut = useMemo(() => {
-    if (checkOutParam) {
-      try {
-        const date = parseISO(checkOutParam);
-        return isNaN(date.getTime()) ? null : date;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }, [checkOutParam]);
+  const isPhotoTourOpen = state.activeModal === 'PHOTO_TOUR_SCROLLABLE';
+  const isLightboxOpen = state.activeModal === 'PHOTO_TOUR_LIGHTBOX';
+  const initialLightboxIndex = state.photoIndex;
+  const isSaved = state.isSaved;
+  const guestCount = state.guestCount;
+  const bookings = state.bookings;
+  const lastOpenedModal = state.lastOpenedModal;
 
   const handleOpenPhotoTour = useCallback(() => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('modal', 'PHOTO_TOUR_SCROLLABLE');
-      return next;
-    });
-  }, [setSearchParams]);
+    setState((prev) => ({
+      ...prev,
+      activeModal: 'PHOTO_TOUR_SCROLLABLE',
+      lastOpenedModal: 'PHOTO_TOUR_SCROLLABLE',
+    }));
+  }, []);
 
-  const handleOpenLightbox = useCallback(
-    (index: number) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('modal', 'PHOTO_TOUR_LIGHTBOX');
-        next.set('photoIndex', index.toString());
-        return next;
-      });
-    },
-    [setSearchParams]
-  );
+  const handleOpenLightbox = useCallback((index: number) => {
+    setState((prev) => ({
+      ...prev,
+      activeModal: 'PHOTO_TOUR_LIGHTBOX',
+      lastOpenedModal: 'PHOTO_TOUR_LIGHTBOX',
+      photoIndex: Math.max(0, index),
+    }));
+  }, []);
+
+  const setPhotoIndex = useCallback((index: number) => {
+    setState((prev) => ({
+      ...prev,
+      photoIndex: Math.max(0, index),
+    }));
+  }, []);
 
   const handleCloseModal = useCallback(() => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('modal');
-      next.delete('photoIndex');
-      return next;
-    });
-  }, [setSearchParams]);
+    setState((prev) => ({
+      ...prev,
+      activeModal: null,
+    }));
+  }, []);
 
-  const handleSelectDates = useCallback(
-    (start: Date | null, end: Date | null) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (start) {
-          next.set('checkIn', format(start, 'yyyy-MM-dd'));
-        } else {
-          next.delete('checkIn');
-        }
-        if (end) {
-          next.set('checkOut', format(end, 'yyyy-MM-dd'));
-        } else {
-          next.delete('checkOut');
-        }
-        return next;
-      });
-    },
-    [setSearchParams]
-  );
+  const handleSelectDates = useCallback((start: Date | null, end: Date | null) => {
+    setState((prev) => ({
+      ...prev,
+      checkIn: start ? format(start, 'yyyy-MM-dd') : null,
+      checkOut: end ? format(end, 'yyyy-MM-dd') : null,
+    }));
+  }, []);
 
   const handleClearDates = useCallback(() => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('checkIn');
-      next.delete('checkOut');
-      return next;
-    });
-  }, [setSearchParams]);
+    setState((prev) => ({
+      ...prev,
+      checkIn: null,
+      checkOut: null,
+    }));
+  }, []);
+
+  const toggleSaved = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      isSaved: !prev.isSaved,
+    }));
+  }, []);
+
+  const setGuestCount = useCallback((count: number) => {
+    setState((prev) => ({
+      ...prev,
+      guestCount: Math.min(3, Math.max(1, Math.trunc(count))),
+    }));
+  }, []);
+
+  const handleReserve = useCallback(
+    (pricing: { nights: number; totalBeforeTaxes: number }) => {
+      setState((prev) => ({
+        ...prev,
+        bookings: [
+          createBookingRecord(listing, {
+            guests: prev.guestCount,
+            checkIn: prev.checkIn ? parseISO(prev.checkIn) : null,
+            checkOut: prev.checkOut ? parseISO(prev.checkOut) : null,
+            nights: pricing.nights,
+            totalBeforeTaxes: pricing.totalBeforeTaxes,
+          }),
+          ...prev.bookings,
+        ],
+      }));
+    },
+    [listing]
+  );
 
   return {
     isPhotoTourOpen,
@@ -108,10 +126,18 @@ export function useListingState() {
     initialLightboxIndex,
     checkIn,
     checkOut,
+    isSaved,
+    guestCount,
+    bookings,
+    lastOpenedModal,
     handleOpenPhotoTour,
     handleOpenLightbox,
+    setPhotoIndex,
     handleCloseModal,
     handleSelectDates,
     handleClearDates,
+    toggleSaved,
+    setGuestCount,
+    handleReserve,
   };
 }

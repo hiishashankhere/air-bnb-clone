@@ -10,6 +10,8 @@ interface PhotoTourModalProps {
   onClose: () => void;
   photos: Photo[];
   onOpenLightbox: (index: number) => void;
+  isSaved: boolean;
+  onToggleSaved: () => void;
 }
 
 export function PhotoTourModal({
@@ -17,8 +19,9 @@ export function PhotoTourModal({
   onClose,
   photos,
   onOpenLightbox,
+  isSaved,
+  onToggleSaved,
 }: PhotoTourModalProps) {
-  const [isSaved, setIsSaved] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Handle escape key & lock body overflow
@@ -77,7 +80,7 @@ export function PhotoTourModal({
                 {copied && <span className="text-gray-900 font-semibold">Copied!</span>}
               </button>
               <button
-                onClick={() => setIsSaved(!isSaved)}
+                onClick={onToggleSaved}
                 className="p-2.5 rounded-full hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-black"
                 aria-label="Save photo tour"
               >

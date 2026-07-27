@@ -39,7 +39,6 @@ export const HostSummarySection = memo(function HostSummarySection({
         {guestsCount} guests · {bedroomsCount} bedroom · {bedsCount} bed · {bathroomsCount} bathroom
       </p>
 
-      {/* Guest Favorite Badge */}
       {isGuestFavorite && (
         <GuestFavoriteCard
           rating={rating}
@@ -48,7 +47,6 @@ export const HostSummarySection = memo(function HostSummarySection({
         />
       )}
 
-      {/* Host Row */}
       <div className="flex items-center gap-4 pt-4">
         <img
           src={host.avatar}
@@ -63,4 +61,3 @@ export const HostSummarySection = memo(function HostSummarySection({
     </SectionContainer>
   );
 });
-

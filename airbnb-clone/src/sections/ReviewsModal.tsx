@@ -37,7 +37,6 @@ export function ReviewsModal({
       maxWidthClass="max-w-4xl"
     >
       <div className="flex flex-col h-full">
-        {/* Custom Header with Rating Banner */}
         <div className="p-4 px-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
           <button
             onClick={onClose}
@@ -46,7 +45,10 @@ export function ReviewsModal({
           >
             <span className="text-xl font-bold">×</span>
           </button>
-          <div id="reviews-modal-title" className="flex items-center gap-2 font-bold text-gray-900 text-lg">
+          <div
+            id="reviews-modal-title"
+            className="flex items-center gap-2 font-bold text-gray-900 text-lg"
+          >
             <Star className="w-5 h-5 fill-current text-gray-900" />
             <span>{rating.toFixed(2)}</span>
             <span>·</span>
@@ -55,9 +57,7 @@ export function ReviewsModal({
           <div className="w-9" />
         </div>
 
-        {/* Modal Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 flex-1 overflow-hidden">
-          {/* Left Sidebar: Ratings Breakdown */}
           <div className="p-6 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto space-y-4 bg-gray-50/50">
             <h3 className="font-bold text-gray-900 text-base mb-4">Ratings</h3>
             {categories.map((cat) => (
@@ -71,7 +71,6 @@ export function ReviewsModal({
             ))}
           </div>
 
-          {/* Right Main Content: Search & Reviews */}
           <div className="md:col-span-2 p-6 sm:p-8 overflow-y-auto space-y-6">
             <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-4 top-3.5" />
@@ -102,7 +101,9 @@ export function ReviewsModal({
                     )}
                     <div>
                       <div className="font-semibold text-gray-900 text-base">{rev.author}</div>
-                      <div className="text-xs text-gray-500">{rev.tenure} · {rev.date}</div>
+                      <div className="text-xs text-gray-500">
+                        {rev.tenure} · {rev.date}
+                      </div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-800 leading-relaxed font-normal">{rev.content}</p>
@@ -115,5 +116,3 @@ export function ReviewsModal({
     </BaseModal>
   );
 }
-
-

@@ -8,6 +8,9 @@ interface LightboxModalProps {
   onClose: () => void;
   photos: Photo[];
   initialIndex?: number;
+  isSaved: boolean;
+  onToggleSaved: () => void;
+  onIndexChange: (index: number) => void;
 }
 
 export function LightboxModal({
@@ -15,24 +18,35 @@ export function LightboxModal({
   onClose,
   photos,
   initialIndex = 0,
+  isSaved,
+  onToggleSaved,
+  onIndexChange,
 }: LightboxModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [direction, setDirection] = useState<number>(0);
-  const [isSaved, setIsSaved] = useState(false);
+  const safeInitialIndex = Math.min(Math.max(0, initialIndex), Math.max(0, photos.length - 1));
 
   useEffect(() => {
-    setCurrentIndex(initialIndex);
-  }, [initialIndex]);
+    setCurrentIndex(safeInitialIndex);
+  }, [safeInitialIndex]);
 
   const handlePrev = useCallback(() => {
     setDirection(-1);
-    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
-  }, [photos.length]);
+    setCurrentIndex((prev) => {
+      const next = prev > 0 ? prev - 1 : photos.length - 1;
+      onIndexChange(next);
+      return next;
+    });
+  }, [onIndexChange, photos.length]);
 
   const handleNext = useCallback(() => {
     setDirection(1);
-    setCurrentIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
-  }, [photos.length]);
+    setCurrentIndex((prev) => {
+      const next = prev < photos.length - 1 ? prev + 1 : 0;
+      onIndexChange(next);
+      return next;
+    });
+  }, [onIndexChange, photos.length]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -102,7 +116,7 @@ export function LightboxModal({
                 <Share className="w-5 h-5 text-white" />
               </button>
               <button
-                onClick={() => setIsSaved(!isSaved)}
+                onClick={onToggleSaved}
                 className="p-2.5 rounded-full hover:bg-white/10 transition focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Save photo"
               >
@@ -174,4 +188,3 @@ export function LightboxModal({
     </AnimatePresence>
   );
 }
-

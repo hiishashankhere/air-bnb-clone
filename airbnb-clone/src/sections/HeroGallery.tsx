@@ -4,10 +4,9 @@ import type { Photo } from '../types/listing';
 interface HeroGalleryProps {
   photos: Photo[];
   onOpenPhotoTour: () => void;
-  onOpenLightbox: (index: number) => void;
 }
 
-export function HeroGallery({ photos, onOpenPhotoTour, onOpenLightbox }: HeroGalleryProps) {
+export function HeroGallery({ photos, onOpenPhotoTour }: HeroGalleryProps) {
   const displayPhotos = photos.slice(0, 5);
 
   return (
@@ -17,16 +16,16 @@ export function HeroGallery({ photos, onOpenPhotoTour, onOpenLightbox }: HeroGal
         {/* Main Large Featured Photo (Left 2 columns) */}
         {displayPhotos[0] && (
           <div
-            onClick={() => onOpenLightbox(0)}
+            onClick={onOpenPhotoTour}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onOpenLightbox(0);
+                onOpenPhotoTour();
               }
             }}
             tabIndex={0}
             role="button"
-            aria-label={`View full photo 1: ${displayPhotos[0].caption}`}
+            aria-label="Open photo tour"
             className="md:col-span-2 relative h-full overflow-hidden cursor-pointer bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black"
           >
             <img
@@ -39,21 +38,20 @@ export function HeroGallery({ photos, onOpenPhotoTour, onOpenLightbox }: HeroGal
 
         {/* Right 2x2 Sub-grid */}
         <div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2 h-full">
-          {displayPhotos.slice(1, 5).map((photo, idx) => {
-            const actualIndex = idx + 1;
+        {displayPhotos.slice(1, 5).map((photo) => {
             return (
               <div
                 key={photo.id}
-                onClick={() => onOpenLightbox(actualIndex)}
+                onClick={onOpenPhotoTour}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    onOpenLightbox(actualIndex);
+                    onOpenPhotoTour();
                   }
                 }}
                 tabIndex={0}
                 role="button"
-                aria-label={`View full photo ${actualIndex + 1}: ${photo.caption}`}
+                aria-label="Open photo tour"
                 className="relative h-full overflow-hidden cursor-pointer bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black"
               >
                 <img
@@ -79,4 +77,3 @@ export function HeroGallery({ photos, onOpenPhotoTour, onOpenLightbox }: HeroGal
     </div>
   );
 }
-

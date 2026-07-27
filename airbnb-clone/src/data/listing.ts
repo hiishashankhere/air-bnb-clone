@@ -136,7 +136,7 @@ export const listingData: ListingData = {
     },
   ],
   description:
-    'Plan Your Relaxing Holiday at Amor De Goa by Mirashya Homes! ✨ Stay in this cozy 1BHK in the heart of Candolim, featuring a private jacuzzi 🛁 for the perfect unwind. Enjoy high-speed WiFi 💻, Smart TV 📺, pet-friendly comfort 🐾, and stylish interiors. Just minutes from Candolim Beach 🏖️, popular cafés, restaurants, and nightlife 🍸, it’s ideal for couples or small families.',
+    'Plan your relaxing holiday at Amor De Goa by Mirashya Homes. Stay in this cozy 1BHK in the heart of Candolim, featuring a private jacuzzi for the perfect unwind. Enjoy high-speed Wi-Fi, Smart TV, pet-friendly comfort, and stylish interiors. Just minutes from Candolim Beach, popular cafes, restaurants, and nightlife, it is ideal for couples or small families.',
   sleepingArrangements: [
     {
       id: 'bed-1',
@@ -234,7 +234,8 @@ export const listingData: ListingData = {
       tenure: '3 years on Airbnb',
       date: 'May 2026',
       rating: 5,
-      content: "Great great experience living out there , can't expect more , will always look for it in the future and will recommend my friends too.",
+      content:
+        "Great great experience living out there, can't expect more, will always look for it in the future and will recommend my friends too.",
     },
     {
       id: 'r6',
@@ -247,13 +248,13 @@ export const listingData: ListingData = {
     },
   ],
   neighbourhoodHighlights:
-    'Located in the heart of Candolim, Amor de Goa offers a peaceful stay with easy access to beaches, cafés, and popular attractions.',
+    'Located in the heart of Candolim, Amor de Goa offers a peaceful stay with easy access to beaches, cafes, and popular attractions.',
   lat: 15.518,
   lng: 73.763,
   houseRules: ['Check-in after 2:00 pm', 'Checkout before 11:00 am', '3 guests maximum'],
   safetyProperty: ['Carbon monoxide alarm not reported', 'Smoke alarm not reported', 'Exterior security cameras on property'],
   cancellationPolicy:
-    'Free cancellation before 17 October. Cancel before check-in on 18 October for a partial refund. Review this host’s full policy for details.',
+    "Free cancellation before 17 October. Cancel before check-in on 18 October for a partial refund. Review this host's full policy for details.",
   nearbyStays: [
     {
       id: 'stay-1',
