@@ -87,7 +87,6 @@ export const BookingCard = memo(function BookingCard({
 
     onReserve({ nights: nightsCount, totalBeforeTaxes: totalPrice });
     setIsDatePickerOpen(false);
-    setIsGuestDropdownOpen(false);
     setStatusMessage(`Reservation saved locally for ${nightsCount} nights.`);
   };
 
