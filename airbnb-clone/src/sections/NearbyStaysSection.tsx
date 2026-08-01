@@ -10,6 +10,8 @@ interface NearbyStaysSectionProps {
 export const NearbyStaysSection = memo(function NearbyStaysSection({ stays }: NearbyStaysSectionProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(stays.length / 2) || 1;
+  const startIndex = (currentPage - 1) * 2;
+  const visibleStays = stays.slice(startIndex, startIndex + 2);
 
   return (
     <SectionContainer hasDivider={false}>
@@ -41,7 +43,7 @@ export const NearbyStaysSection = memo(function NearbyStaysSection({ stays }: Ne
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {stays.map((stay) => (
+        {visibleStays.map((stay) => (
           <div key={stay.id} className="group cursor-pointer">
             <div className="h-64 rounded-2xl overflow-hidden mb-3 relative bg-gray-100 shadow-airbnb-card">
               <img
@@ -71,4 +73,3 @@ export const NearbyStaysSection = memo(function NearbyStaysSection({ stays }: Ne
     </SectionContainer>
   );
 });
-

@@ -1,13 +1,74 @@
 import { GraduationCap, ShieldCheck, UserCheck } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { SectionContainer } from '../components/common/SectionContainer';
+import { BaseModal } from '../components/common/BaseModal';
+import {
+  clearHostMessageDraft,
+  loadHostMessageDraft,
+  loadHostMessages,
+  saveHostMessage,
+  saveHostMessageDraft,
+} from '../lib/demoStorage';
 import type { HostInfo } from '../types/listing';
 
 interface HostProfileSectionProps {
+  listingId: string;
+  listingTitle: string;
   host: HostInfo;
 }
 
-export const HostProfileSection = memo(function HostProfileSection({ host }: HostProfileSectionProps) {
+export const HostProfileSection = memo(function HostProfileSection({
+  listingId,
+  listingTitle,
+  host,
+}: HostProfileSectionProps) {
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageStatus, setMessageStatus] = useState<string | null>(null);
+  const [savedMessages, setSavedMessages] = useState(() => loadHostMessages(listingId));
+
+  useEffect(() => {
+    if (!isMessageOpen) return;
+
+    const draft = loadHostMessageDraft(listingId);
+    setGuestName(draft.guestName);
+    setGuestEmail(draft.guestEmail);
+    setMessage(draft.message);
+    setSavedMessages(loadHostMessages(listingId));
+    setMessageStatus(null);
+  }, [isMessageOpen, listingId]);
+
+  useEffect(() => {
+    if (!isMessageOpen) return;
+    saveHostMessageDraft(listingId, { guestName, guestEmail, message });
+  }, [guestEmail, guestName, isMessageOpen, listingId, message]);
+
+  const handleSendMessage = () => {
+    if (!message.trim()) {
+      setMessageStatus('Please add a message before saving it locally.');
+      return;
+    }
+
+    const saved = saveHostMessage({
+      listingId,
+      guestName,
+      guestEmail,
+      message,
+      checkIn: null,
+      checkOut: null,
+      guests: 1,
+    });
+
+    clearHostMessageDraft(listingId);
+    setSavedMessages((prev) => [saved, ...prev].slice(0, 5));
+    setMessage('');
+    setGuestName('');
+    setGuestEmail('');
+    setMessageStatus('Message saved locally in this browser.');
+  };
+
   return (
     <SectionContainer>
       <h2 className="text-2xl font-semibold text-gray-900 mb-8">Meet your host</h2>
@@ -83,7 +144,11 @@ export const HostProfileSection = memo(function HostProfileSection({ host }: Hos
           <p>{host.responseSpeed}</p>
         </div>
 
-        <button className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black">
+        <button
+          type="button"
+          onClick={() => setIsMessageOpen(true)}
+          className="px-6 py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black"
+        >
           Message host
         </button>
       </div>
@@ -95,7 +160,101 @@ export const HostProfileSection = memo(function HostProfileSection({ host }: Hos
           To help protect your payment, always use Airbnb to send money and communicate with hosts.
         </span>
       </div>
+
+      <BaseModal
+        isOpen={isMessageOpen}
+        onClose={() => setIsMessageOpen(false)}
+        title={`Message ${host.name}`}
+        maxWidthClass="max-w-2xl"
+      >
+        <div className="p-6 sm:p-8 space-y-6">
+          <div>
+            <p className="text-sm text-gray-600">
+              This demo stores host messages locally for {listingTitle}. Nothing is sent to a backend.
+            </p>
+            <p className="text-sm font-semibold text-gray-900 mt-2">
+              {savedMessages.length} local message(s) saved
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Your name
+              </label>
+              <input
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder="Guest name"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Email
+              </label>
+              <input
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                type="email"
+                placeholder="name@example.com"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+              Message
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={6}
+              placeholder={`Hi ${host.name}, I have a question about ${listingTitle}...`}
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black resize-none"
+            />
+          </div>
+
+          {messageStatus && <p className="text-sm font-medium text-gray-600">{messageStatus}</p>}
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <p className="text-xs text-gray-500">
+              Your draft is preserved locally while the modal is open, and sent messages stay in this browser.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMessageOpen(false)}
+                className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                Save message
+              </button>
+            </div>
+          </div>
+
+          {savedMessages.length > 0 && (
+            <div className="pt-4 border-t border-gray-200 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900">Recent local messages</h3>
+              <div className="space-y-2">
+                {savedMessages.slice(0, 3).map((entry) => (
+                  <div key={entry.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="text-sm font-semibold text-gray-900">{entry.guestName}</div>
+                    <p className="text-xs text-gray-500 mt-1">{entry.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </BaseModal>
     </SectionContainer>
   );
 });
-

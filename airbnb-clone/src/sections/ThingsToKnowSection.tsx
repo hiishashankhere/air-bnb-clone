@@ -1,5 +1,6 @@
 import { CalendarX, ChevronRight, KeyRound, ShieldAlert } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { BaseModal } from '../components/common/BaseModal';
 import { SectionContainer } from '../components/common/SectionContainer';
 
 interface ThingsToKnowSectionProps {
@@ -13,6 +14,8 @@ export const ThingsToKnowSection = memo(function ThingsToKnowSection({
   houseRules,
   safetyProperty,
 }: ThingsToKnowSectionProps) {
+  const [activeTopic, setActiveTopic] = useState<'cancellation' | 'rules' | 'safety' | null>(null);
+
   return (
     <SectionContainer>
       <h2 className="text-2xl font-semibold text-gray-900 mb-8">Things to know</h2>
@@ -25,7 +28,11 @@ export const ThingsToKnowSection = memo(function ThingsToKnowSection({
             <h3>Cancellation policy</h3>
           </div>
           <p className="text-sm text-gray-700 leading-relaxed font-normal">{cancellationPolicy}</p>
-          <button className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 focus:outline-none">
+          <button
+            type="button"
+            onClick={() => setActiveTopic('cancellation')}
+            className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 focus:outline-none"
+          >
             <span>Learn more</span>
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -42,7 +49,11 @@ export const ThingsToKnowSection = memo(function ThingsToKnowSection({
               <li key={idx}>{rule}</li>
             ))}
           </ul>
-          <button className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 pt-1 focus:outline-none">
+          <button
+            type="button"
+            onClick={() => setActiveTopic('rules')}
+            className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 pt-1 focus:outline-none"
+          >
             <span>Learn more</span>
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -59,13 +70,63 @@ export const ThingsToKnowSection = memo(function ThingsToKnowSection({
               <li key={idx}>{item}</li>
             ))}
           </ul>
-          <button className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 pt-1 focus:outline-none">
+          <button
+            type="button"
+            onClick={() => setActiveTopic('safety')}
+            className="flex items-center gap-1 text-sm font-semibold text-gray-900 underline hover:text-gray-700 pt-1 focus:outline-none"
+          >
             <span>Learn more</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      <BaseModal
+        isOpen={activeTopic !== null}
+        onClose={() => setActiveTopic(null)}
+        title="Learn more"
+        maxWidthClass="max-w-2xl"
+      >
+        <div className="p-6 sm:p-8 space-y-4">
+          {activeTopic === 'cancellation' && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900">Cancellation policy</h3>
+              <p className="text-sm text-gray-700 leading-relaxed">{cancellationPolicy}</p>
+              <p className="text-xs text-gray-500">
+                In the demo, this copy is static and fully frontend-driven.
+              </p>
+            </>
+          )}
+
+          {activeTopic === 'rules' && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900">House rules</h3>
+              <ul className="text-sm text-gray-700 space-y-2">
+                {houseRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-gray-500">
+                These rules are stored as part of the mock listing data for this assignment.
+              </p>
+            </>
+          )}
+
+          {activeTopic === 'safety' && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900">Safety & property</h3>
+              <ul className="text-sm text-gray-700 space-y-2">
+                {safetyProperty.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-gray-500">
+                The safety details are demo content and do not come from a backend source.
+              </p>
+            </>
+          )}
+        </div>
+      </BaseModal>
     </SectionContainer>
   );
 });
-

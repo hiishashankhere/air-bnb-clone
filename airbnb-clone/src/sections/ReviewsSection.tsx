@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react';
 import { memo, useState } from 'react';
+import { BaseModal } from '../components/common/BaseModal';
 import { SectionContainer } from '../components/common/SectionContainer';
 import type { Review, ReviewCategory, ReviewFilterTag } from '../types/listing';
 import { renderAmenityIcon } from '../utils/iconHelpers';
@@ -22,6 +23,7 @@ export const ReviewsSection = memo(function ReviewsSection({
 }: ReviewsSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
 
   const displayReviews = selectedTag
     ? reviews.filter((r) => r.content.toLowerCase().includes(selectedTag.toLowerCase()))
@@ -40,7 +42,11 @@ export const ReviewsSection = memo(function ReviewsSection({
         <p className="text-sm text-gray-600 max-w-sm mx-auto mt-1">
           This home is a guest favourite based on ratings, reviews and reliability
         </p>
-        <button className="text-xs font-semibold text-gray-900 underline mt-2 hover:text-gray-700 focus:outline-none">
+        <button
+          type="button"
+          onClick={() => setIsHowItWorksOpen(true)}
+          className="text-xs font-semibold text-gray-900 underline mt-2 hover:text-gray-700 focus:outline-none"
+        >
           How reviews work
         </button>
       </div>
@@ -141,7 +147,30 @@ export const ReviewsSection = memo(function ReviewsSection({
         categories={categories}
         reviews={reviews}
       />
+
+      <BaseModal
+        isOpen={isHowItWorksOpen}
+        onClose={() => setIsHowItWorksOpen(false)}
+        title="How reviews work"
+        maxWidthClass="max-w-2xl"
+      >
+        <div className="p-6 sm:p-8 space-y-4">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            This demo uses locally defined review data to mirror how Airbnb aggregates guest feedback.
+            In a real product, the rating would be computed from verified stays, category scores, and
+            moderation rules.
+          </p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
+            <p className="text-sm font-semibold text-gray-900">Current listing snapshot</p>
+            <p className="text-sm text-gray-600">{rating.toFixed(2)} average rating</p>
+            <p className="text-sm text-gray-600">{reviewsCount} guest reviews</p>
+            <p className="text-sm text-gray-600">{filterTags.length} highlighted review topics</p>
+          </div>
+          <p className="text-xs text-gray-500">
+            Everything stays in the frontend for this assignment, so no review data is sent anywhere.
+          </p>
+        </div>
+      </BaseModal>
     </SectionContainer>
   );
 });
-

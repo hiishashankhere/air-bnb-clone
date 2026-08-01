@@ -1,6 +1,10 @@
 import { Globe, Menu, Search, User } from 'lucide-react';
 
-export function Navbar() {
+interface NavbarProps {
+  onOpenSearch: () => void;
+}
+
+export function Navbar({ onOpenSearch }: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 w-full bg-white border-b border-gray-200">
       <div className="max-w-[1280px] mx-auto px-6 h-20 flex items-center justify-between">
@@ -21,25 +25,19 @@ export function Navbar() {
         </a>
 
         {/* Search Bar Pill */}
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
+          onClick={onOpenSearch}
           className="flex items-center border border-gray-300 rounded-full py-2 pl-4 pr-2 shadow-airbnb-search hover:shadow-airbnb transition cursor-pointer text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
           aria-label="Start your search"
         >
-          <button className="px-3 text-gray-900 border-r border-gray-200 hover:text-black focus:outline-none">
-            Anywhere
-          </button>
-          <button className="px-3 text-gray-900 border-r border-gray-200 hover:text-black focus:outline-none">
-            Any week
-          </button>
-          <button className="px-3 text-gray-500 hover:text-gray-800 font-normal focus:outline-none">
-            Add guests
-          </button>
+          <span className="px-3 text-gray-900 border-r border-gray-200 hover:text-black">Anywhere</span>
+          <span className="px-3 text-gray-900 border-r border-gray-200 hover:text-black">Any week</span>
+          <span className="px-3 text-gray-500 hover:text-gray-800 font-normal">Add guests</span>
           <div className="p-2 bg-[#FF385C] text-white rounded-full ml-1 hover:bg-[#E00B41] transition">
             <Search className="w-3.5 h-3.5 stroke-[3]" />
           </div>
-        </div>
+        </button>
 
         {/* Right Nav */}
         <div className="flex items-center gap-1.5">
@@ -66,4 +64,3 @@ export function Navbar() {
     </header>
   );
 }
-

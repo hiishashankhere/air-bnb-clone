@@ -2,9 +2,16 @@ import { format } from 'date-fns';
 import { ChevronDown, Flag, Star, X } from 'lucide-react';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Calendar } from '../components/calendar/Calendar';
+import { BaseModal } from '../components/common/BaseModal';
 import { calculateNights } from '../utils/dateUtils';
+import {
+  loadListingReports,
+  saveListingReport,
+} from '../lib/demoStorage';
 
 interface BookingCardProps {
+  listingId: string;
+  listingTitle: string;
   pricePerNight: number;
   rating: number;
   reviewsCount: number;
@@ -21,6 +28,8 @@ interface BookingCardProps {
 }
 
 export const BookingCard = memo(function BookingCard({
+  listingId,
+  listingTitle,
   pricePerNight,
   rating,
   reviewsCount,
@@ -37,6 +46,12 @@ export const BookingCard = memo(function BookingCard({
 }: BookingCardProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('Incorrect listing details');
+  const [reportDetails, setReportDetails] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [reportStatusMessage, setReportStatusMessage] = useState<string | null>(null);
+  const [recentReports, setRecentReports] = useState(() => loadListingReports(listingId));
   const cardRef = useRef<HTMLDivElement | null>(null);
 
   const actualNights = calculateNights(checkIn, checkOut);
@@ -74,6 +89,12 @@ export const BookingCard = memo(function BookingCard({
     };
   }, []);
 
+  useEffect(() => {
+    if (isReportOpen) {
+      setRecentReports(loadListingReports(listingId));
+    }
+  }, [isReportOpen, listingId]);
+
   const handleToggleDatePicker = () => {
     setIsDatePickerOpen((prev) => !prev);
   };
@@ -88,6 +109,27 @@ export const BookingCard = memo(function BookingCard({
     onReserve({ nights: nightsCount, totalBeforeTaxes: totalPrice });
     setIsDatePickerOpen(false);
     setStatusMessage(`Reservation saved locally for ${nightsCount} nights.`);
+  };
+
+  const handleSubmitReport = () => {
+    if (!reportDetails.trim()) {
+      setReportStatusMessage('Please add a few details so the demo can store the report locally.');
+      return;
+    }
+
+    const saved = saveListingReport({
+      listingId,
+      listingTitle,
+      reason: reportReason,
+      details: reportDetails,
+      contactEmail,
+    });
+
+    setRecentReports((prev) => [saved, ...prev].slice(0, 3));
+    setReportDetails('');
+    setContactEmail('');
+    setReportReason('Incorrect listing details');
+    setReportStatusMessage('Report saved locally in this browser.');
   };
 
   return (
@@ -257,11 +299,115 @@ export const BookingCard = memo(function BookingCard({
       </div>
 
       <div className="pt-2 text-center">
-        <button className="inline-flex items-center gap-2 text-xs text-gray-500 font-semibold hover:text-gray-900 underline focus:outline-none">
+        <button
+          type="button"
+          onClick={() => setIsReportOpen(true)}
+          className="inline-flex items-center gap-2 text-xs text-gray-500 font-semibold hover:text-gray-900 underline focus:outline-none"
+        >
           <Flag className="w-3.5 h-3.5" />
           <span>Report this listing</span>
         </button>
       </div>
+
+      <BaseModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        title="Report this listing"
+        maxWidthClass="max-w-2xl"
+      >
+        <div className="p-6 sm:p-8 space-y-6">
+          <div>
+            <p className="text-sm text-gray-600">
+              This is a frontend-only demo. Reports are stored locally in your browser for the listing
+              {` `}{listingTitle}.
+            </p>
+            <p className="text-sm font-semibold text-gray-900 mt-2">{recentReports.length} local report(s) saved</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Reason
+              </label>
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                <option>Incorrect listing details</option>
+                <option>Safety concern</option>
+                <option>Host communication issue</option>
+                <option>Accessibility issue</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Details
+              </label>
+              <textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={5}
+                placeholder="Tell us what happened"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Contact email
+              </label>
+              <input
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                type="email"
+                placeholder="name@example.com"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+          </div>
+
+          {reportStatusMessage && <p className="text-sm font-medium text-gray-600">{reportStatusMessage}</p>}
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <p className="text-xs text-gray-500">
+              Your report will stay on this device only, so you can review it later in the demo.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsReportOpen(false)}
+                className="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitReport}
+                className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-semibold hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                Save report
+              </button>
+            </div>
+          </div>
+
+          {recentReports.length > 0 && (
+            <div className="pt-4 border-t border-gray-200 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900">Recent local reports</h3>
+              <div className="space-y-2">
+                {recentReports.slice(0, 3).map((report) => (
+                  <div key={report.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="text-sm font-semibold text-gray-900">{report.reason}</div>
+                    <p className="text-xs text-gray-500 mt-1">{report.details}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </BaseModal>
     </div>
   );
 });

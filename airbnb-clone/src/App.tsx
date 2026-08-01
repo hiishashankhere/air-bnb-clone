@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Footer } from './components/layout/Footer';
 import { Navbar } from './components/layout/Navbar';
 import { SEOHead } from './components/seo/SEOHead';
@@ -18,6 +18,7 @@ import { NearbyStaysSection } from './sections/NearbyStaysSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { SleepingSection } from './sections/SleepingSection';
 import { ThingsToKnowSection } from './sections/ThingsToKnowSection';
+import { SearchModal } from './features/search/SearchModal';
 
 // Code-split heavy modal overlays with React.lazy
 const PhotoTourModal = lazy(() =>
@@ -28,6 +29,7 @@ const LightboxModal = lazy(() =>
 );
 
 export default function App() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const {
     isPhotoTourOpen,
     isLightboxOpen,
@@ -62,7 +64,7 @@ export default function App() {
       />
 
       {/* Global Navbar */}
-      <Navbar />
+      <Navbar onOpenSearch={() => setIsSearchOpen(true)} />
 
       {/* Main Container */}
       <main className="flex-1 max-w-[1280px] w-full mx-auto px-6">
@@ -113,6 +115,8 @@ export default function App() {
           {/* Right Column: Sticky Booking Card */}
           <div className="lg:col-span-5 relative hidden lg:block pl-4">
             <BookingCard
+              listingId={listingData.id}
+              listingTitle={listingData.title}
               pricePerNight={listingData.pricePerNight}
               rating={listingData.rating}
               reviewsCount={listingData.reviewsCount}
@@ -145,7 +149,11 @@ export default function App() {
             highlights={listingData.neighbourhoodHighlights}
           />
 
-          <HostProfileSection host={listingData.host} />
+          <HostProfileSection
+            listingId={listingData.id}
+            listingTitle={listingData.title}
+            host={listingData.host}
+          />
 
           <ThingsToKnowSection
             cancellationPolicy={listingData.cancellationPolicy}
@@ -185,6 +193,20 @@ export default function App() {
           />
         )}
       </Suspense>
+
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        currentLocation={listingData.location}
+        currentCheckIn={checkIn}
+        currentCheckOut={checkOut}
+        currentGuests={guestCount}
+        onApplySearch={({ checkIn: nextCheckIn, checkOut: nextCheckOut, guests }) => {
+          handleSelectDates(nextCheckIn, nextCheckOut);
+          setGuestCount(guests);
+          setIsSearchOpen(false);
+        }}
+      />
     </div>
   );
 }
